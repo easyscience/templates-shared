@@ -1,0 +1,72 @@
+# This workflow automatically merges `master` into `develop` whenever a
+# new version tag is pushed (v*).
+#
+# Key points:
+# - Directly merges master into develop without creating a PR.
+# - Skips CI on the merge commit using [skip ci] in the commit message.
+# - The code being merged has already been tested as part of the release process.
+# - This ensures develop stays up-to-date with release changes (version bumps, etc.).
+#
+# Required organization config:
+# https://github.com/organizations/easyscience/settings/secrets/actions
+# https://github.com/organizations/easyscience/settings/variables/actions
+# - Actions secret:   EASYSCIENCE_APP_KEY  (GitHub App private key PEM)
+# - Actions variable: EASYSCIENCE_APP_ID   (GitHub App ID)
+#
+# IMPORTANT:
+# The GitHub App must be added to the develop branch ruleset bypass list.
+
+name: Backmerge (master -> develop)
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  backmerge:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Create GitHub App installation token
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${% raw %}{{ vars.EASYSCIENCE_APP_ID }}{% endraw %}
+          private-key: ${% raw %}{{ secrets.EASYSCIENCE_APP_KEY }}{% endraw %}
+
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          token: ${% raw %}{{ steps.app-token.outputs.token }}{% endraw %}
+
+      - name: Configure git for pushing
+        run: |
+          git config user.name "easyscience[bot]"
+          git config user.email "${% raw %}{{ vars.EASYSCIENCE_APP_ID }}{% endraw %}+easyscience[bot]@users.noreply.github.com"
+
+      - name: Merge master into develop
+        run: |
+          # Exit on error (-e), undefined vars (-u), and pipeline failures (pipefail)
+          set -euo pipefail
+
+          # Get the tag name variable to be used in the commit message
+          TAG='${% raw %}{{ github.ref_name }}{% endraw %}'
+
+          # Ensure local develop branch exists and is up-to-date with origin
+          git fetch origin develop:develop
+
+          # Switch to develop branch
+          git checkout develop
+
+          # Merge master into develop (no fast-forward to preserve history)
+          # Use [skip ci] to avoid triggering CI - the code was already tested on master
+          git merge origin/master --no-ff -m "Backmerge: ${TAG} from master into develop [skip ci]"
+
+          # Push the merge commit to develop
+          git push origin develop
+
+          echo "✅ Successfully merged master (${TAG}) into develop"
