@@ -167,7 +167,7 @@ jobs:
           # Exit on error (-e), undefined vars (-u), and pipeline failures (pipefail)
           set -euo pipefail
 
-          REPO_NAME="${{ github.event.repository.name }}"
+          REPO_NAME="${% raw %}{{ github.event.repository.name }}{% endraw %}"
           BASE_URL="https://easyscience.github.io/${REPO_NAME}"
 
           if [[ "${IS_RELEASE_TAG}" == "true" ]]; then
