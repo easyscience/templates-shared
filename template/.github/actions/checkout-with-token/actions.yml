@@ -1,0 +1,25 @@
+name: "Checkout with token"
+description: "Check out the repository using a provided token"
+inputs:
+  token:
+    description: "Token to use for checkout"
+    required: true
+  fetch-depth:
+    description: "actions/checkout fetch-depth"
+    required: false
+    default: "1"
+  ref:
+    description: "Branch, tag, or SHA to checkout (optional)"
+    required: false
+    default: ""
+
+runs:
+  using: "composite"
+  steps:
+    - name: Check out repository
+      uses: actions/checkout@v5
+      with:
+        token: ${{ inputs.token }}
+        fetch-depth: ${{ inputs.fetch-depth }}
+        # `ref` can't be conditionally omitted in YAML easily; empty string is fine.
+        ref: ${{ inputs.ref }}

@@ -86,19 +86,19 @@ jobs:
           echo "DEPLOYMENT_URL=https://easyscience.github.io/${% raw %}{{ github.event.repository.name }}{% endraw %}/${DOCS_VERSION}" >> "$GITHUB_ENV"
 
       # Create GitHub App token for pushing to gh-pages as easyscience[bot].
-      - name: Create GitHub App installation token
-        id: app-token
-        uses: actions/create-github-app-token@v2
+      - name: Setup easyscience[bot]
+        id: bot
+        uses: ./.github/actions/setup-easyscience-bot
         with:
           app-id: ${% raw %}{{ vars.EASYSCIENCE_APP_ID }}{% endraw %}
           private-key: ${% raw %}{{ secrets.EASYSCIENCE_APP_KEY }}{% endraw %}
 
       # Check out the repository source code.
       # Note: The gh-pages branch is fetched separately later for mike deployment.
-      - name: Check-out repository
-        uses: actions/checkout@v5
+      - name: Checkout repository (with bot token)
+        uses: ./.github/actions/checkout-with-token
         with:
-          token: ${% raw %}{{ steps.app-token.outputs.token }}{% endraw %}
+          token: ${% raw %}{{ steps.bot.outputs.token }}{% endraw %}
 
       # Activate dark mode to create documentation with Plotly charts in dark mode
       # Need a better solution to automatically switch the chart colour theme based on the mkdocs material switcher
@@ -121,18 +121,10 @@ jobs:
       #  shell: bash
       #  run: pixi run dev
 
-      # Clone shared documentation assets and branding resources from external repositories.
-      # These contain common MkDocs configuration, templates, stylesheets, and images.
-      #- name: Clone easyscience/assets-docs and easyscience/assets-branding
-      #  run: |
-      #    cd ..
-      #    git clone https://github.com/easyscience/assets-docs.git
-      #    git clone https://github.com/easyscience/assets-branding.git
-
-      # Copy assets from the cloned repositories into the docs/ directory.
-      # This includes stylesheets, images, templates, and other shared resources.
-      #- name: Add files from cloned repositories
-      #  run: pixi run docs-assets
+      # Pre-import the main package to trigger Matplotlib font cache building.
+      # This avoids "Matplotlib is building the font cache" messages during notebook execution.
+      #- name: Pre-build site step
+      #  run: pixi run python -c "import easydiffraction"
 
       # Convert Python scripts in the tutorials/ directory to Jupyter notebooks.
       # This step also strips any existing output from the notebooks and prepares
@@ -140,28 +132,11 @@ jobs:
       #- name: Convert tutorial scripts to notebooks
       #  run: pixi run notebook-prepare
 
-      # Pre-import the main package to trigger Matplotlib font cache building.
-      # This avoids "Matplotlib is building the font cache" messages during notebook execution.
-      #- name: Pre-build site step
-      #  run: pixi run python -c "import easydiffraction"
-
       # Execute all Jupyter notebooks to generate output cells (plots, tables, etc.).
       # Uses multiple cores for parallel execution to speed up the process.
       #- name: Run notebooks
       #  #  if: false # Temporarily disabled to speed up the docs build
       #  run: pixi run notebook-exec
-
-      # Move the executed notebooks to docs/tutorials/ directory
-      # so they can be included in the documentation site.
-      #- name: Move notebooks to docs/tutorials
-      #  run: pixi run docs-notebooks
-
-      # Create the mkdocs.yml configuration file
-      # The file is created by merging two files:
-      # - assets-docs/mkdocs.yml - the common configuration (theme, plugins, etc.)
-      # - docs/mkdocs.yml - the project-specific configuration (project name, TOC, etc.)
-      #- name: Create mkdocs.yml file
-      #  run: pixi run docs-config
 
       # Build the static files for the documentation site for local inspection
       # Input: docs/ directory containing the Markdown files
@@ -178,12 +153,6 @@ jobs:
           path: docs/site/
           if-no-files-found: 'error'
           compression-level: 0
-
-      # Configure git user for mike to commit and push to gh-pages branch.
-      - name: Configure git for pushing
-        run: |
-          git config user.name "easyscience[bot]"
-          git config user.email "${% raw %}{{ vars.EASYSCIENCE_APP_ID }}{% endraw %}+easyscience[bot]@users.noreply.github.com"
 
       # Fetch the gh-pages branch to ensure mike has the latest remote state.
       # This is required because the checkout step only fetches the source branch,

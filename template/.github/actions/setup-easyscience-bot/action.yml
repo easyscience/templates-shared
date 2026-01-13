@@ -1,0 +1,30 @@
+name: "Setup EasyScience bot"
+description: "Create a GitHub App installation token for easyscience[bot]"
+inputs:
+  app-id:
+    description: "GitHub App ID"
+    required: true
+  private-key:
+    description: "GitHub App private key (PEM)"
+    required: true
+
+outputs:
+  token:
+    description: "Installation access token"
+    value: ${{ steps.app-token.outputs.token }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Create GitHub App installation token
+      id: app-token
+      uses: actions/create-github-app-token@v2
+      with:
+        app-id: ${{ inputs.app-id }}
+        private-key: ${{ inputs.private-key }}
+
+    - name: Configure git as easyscience[bot]
+      shell: bash
+      run: |
+        git config user.name "easyscience[bot]"
+        git config user.email "${{ inputs.app-id }}+easyscience[bot]@users.noreply.github.com"
