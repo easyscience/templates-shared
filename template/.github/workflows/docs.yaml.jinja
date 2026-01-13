@@ -181,7 +181,7 @@ jobs:
       - name: Upload built site as artifact
         uses: actions/upload-artifact@v4
         with:
-          name: site-local_${% raw %}{{ project_name | lower }}{% endraw %}-lib-${% raw %}{{ env.RELEASE_VERSION }}{% endraw %}
+          name: site-local_{{ project_name | lower }}-lib-${% raw %}{{ env.RELEASE_VERSION }}{% endraw %}
           path: site/
           if-no-files-found: 'error'
           compression-level: 0
