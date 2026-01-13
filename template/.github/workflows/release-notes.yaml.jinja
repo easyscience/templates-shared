@@ -36,7 +36,7 @@ jobs:
         uses: enhantica/drafterino@v2
         with:
           config: |
-            title: 'easydiffraction $COMPUTED_VERSION'
+            title: '{{ project_name | lower }} $COMPUTED_VERSION'
             tag: 'v$COMPUTED_VERSION'
             note-template: '- $PR_TITLE (#$PR_NUMBER)'
 
@@ -56,14 +56,14 @@ jobs:
                 labels: ['[scope] maintenance', '[scope] documentation']
 
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${% raw %}{{ secrets.GITHUB_TOKEN }}{% endraw %}
 
       - name: Create GitHub draft release
         uses: softprops/action-gh-release@v2
         with:
           draft: true
-          tag_name: ${{ steps.draft.outputs.tag_name }}
-          name: ${{ steps.draft.outputs.release_name }}
-          body: ${{ steps.draft.outputs.release_notes }}
+          tag_name: ${% raw %}{{ steps.draft.outputs.tag_name }}{% endraw %}
+          name: ${% raw %}{{ steps.draft.outputs.release_name }}{% endraw %}
+          body: ${% raw %}{{ steps.draft.outputs.release_notes }}{% endraw %}
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${% raw %}{{ secrets.GITHUB_TOKEN }}{% endraw %}
