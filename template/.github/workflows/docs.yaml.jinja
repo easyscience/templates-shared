@@ -92,7 +92,6 @@ jobs:
 
       # Create GitHub App token for pushing to gh-pages as easyscience[bot].
       - name: Setup easyscience[bot]
-        id: bot
         uses: ./.github/actions/setup-easyscience-bot
         with:
           app-id: ${% raw %}{{ vars.EASYSCIENCE_APP_ID }}{% endraw %}
