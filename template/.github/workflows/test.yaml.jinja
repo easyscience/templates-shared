@@ -167,7 +167,8 @@ jobs:
             pytest.ini
             pixi.toml
             pixi.lock
-          if-no-files-found: 'error'
+          include-hidden-files: true
+          if-no-files-found: error
           compression-level: 0
 
   # Job 3: Test the package
