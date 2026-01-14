@@ -40,12 +40,12 @@ permissions:
 # in-progress and latest queued. And cancel in-progress runs.
 concurrency:
   group:
-    ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+    ${% raw %}{{ github.workflow }}{% endraw %}-${% raw %}{{ github.event.pull_request.number || github.ref }}{% endraw %}
   cancel-in-progress: true
 
 # Set the environment variables to be used in all jobs defined in this workflow
 env:
-  CI_BRANCH: ${{ github.head_ref || github.ref_name }}
+  CI_BRANCH: ${% raw %}{{ github.head_ref || github.ref_name }}{% endraw %}
 
 jobs:
   # Job 1: Prepare environment
@@ -53,7 +53,7 @@ jobs:
     runs-on: [ubuntu-latest]
 
     outputs:
-      pytest-marks: ${{ steps.set-mark.outputs.pytest_marks }}
+      pytest-marks: ${% raw %}{{ steps.set-mark.outputs.pytest_marks }}{% endraw %}
 
     steps:
       # Determine if integration tests should be run fully or only the fast ones
@@ -61,7 +61,7 @@ jobs:
       - name: Set mark for integration tests
         id: set-mark
         run: |
-          if [[ "${{ env.CI_BRANCH }}" == "master" || "${{ env.CI_BRANCH }}" == "develop" ]]; then
+          if [[ "${% raw %}{{ env.CI_BRANCH }}{% endraw %}" == "master" || "${% raw %}{{ env.CI_BRANCH }}{% endraw %}" == "develop" ]]; then
             echo "pytest_marks=" >> $GITHUB_OUTPUT
           else
             echo "pytest_marks=-m fast" >> $GITHUB_OUTPUT
@@ -76,7 +76,7 @@ jobs:
       matrix:
         os: [ubuntu-24.04, macos-14, windows-2022]
 
-    runs-on: ${{ matrix.os }}
+    runs-on: ${% raw %}{{ matrix.os }}{% endraw %}
 
     env:
       PIXI_ENVS: 'default' #'py311-dev py313-dev'
@@ -93,7 +93,7 @@ jobs:
       #- name: Set up pixi
       #  uses: prefix-dev/setup-pixi@v0.9.3
       #  with:
-      #    environments: ${{ env.PIXI_ENVS }}
+      #    environments: ${% raw %}{{ env.PIXI_ENVS }}{% endraw %}
       #    run-install: true
       #    frozen: true
       #    cache: false
@@ -102,29 +102,28 @@ jobs:
       - name: Install and setup development dependencies
         shell: bash
         run: |
-          for env in ${{ env.PIXI_ENVS }}; do
+          for env in ${% raw %}{{ env.PIXI_ENVS }}{% endraw %}; do
             echo "🔹🔸🔹🔸🔹   Current env: $env   🔹🔸🔹🔸🔹"
             pixi run --environment $env dev
             echo "PYTHONPATH:"
             pixi run printenv PYTHONPATH || true
-            pixi run --environment $env easydiffraction --version
           done
 
       - name: Run unit tests
         shell: bash
         run: |
-          for env in ${{ env.PIXI_ENVS }}; do
+          for env in ${% raw %}{{ env.PIXI_ENVS }}{% endraw %}; do
             echo "🔹🔸🔹🔸🔹   Current env: $env   🔹🔸🔹🔸🔹"
             pixi run --environment $env unit-tests
           done
 
       - name:
-          Run integration tests ${{ needs.env-prepare.outputs.pytest-marks }}
+          Run integration tests ${% raw %}{{ needs.env-prepare.outputs.pytest-marks }}{% endraw %}
         shell: bash
         run: |
-          for env in ${{ env.PIXI_ENVS }}; do
+          for env in ${% raw %}{{ env.PIXI_ENVS }}{% endraw %}; do
             echo "🔹🔸🔹🔸🔹   Current env: $env   🔹🔸🔹🔸🔹"
-            pixi run --environment $env integration-tests ${{ needs.env-prepare.outputs.pytest-marks }}
+            pixi run --environment $env integration-tests ${% raw %}{{ needs.env-prepare.outputs.pytest-marks }}{% endraw %}
           done
 
       # Delete all local tags when not on a tagged commit to force versioningit
@@ -138,7 +137,7 @@ jobs:
       - name: Create Python package
         shell: bash
         run: |
-          for env in ${{ env.PIXI_ENVS }}; do
+          for env in ${% raw %}{{ env.PIXI_ENVS }}{% endraw %}; do
             echo "🔹🔸🔹🔸🔹   Current env: $env   🔹🔸🔹🔸🔹"
             pixi run -e $env dist-build
             env_prefix="${env%%-*}"
@@ -160,7 +159,7 @@ jobs:
       - name: Upload Python package for the next job
         uses: actions/upload-artifact@v4
         with:
-          name: edl_${{ matrix.os }}_${{ runner.arch }}
+          name: {{ project_name | lower }}_${% raw %}{{ matrix.os }}{% endraw %}_${% raw %}{{ runner.arch }}{% endraw %}
           path: |
             dist/
             tests/
@@ -179,7 +178,7 @@ jobs:
       matrix:
         os: [ubuntu-24.04, macos-14, windows-2022]
 
-    runs-on: ${{ matrix.os }}
+    runs-on: ${% raw %}{{ matrix.os }}{% endraw %}
 
     env:
       PIXI_ENVS: 'default' # 'py311-dev py313-dev'
@@ -189,7 +188,7 @@ jobs:
           Download zipped Python package (incl. extra files) from previous job
         uses: actions/download-artifact@v4
         with: # name or path are taken from the upload step of the previous job
-          name: edl_${{ matrix.os }}_${{ runner.arch }}
+          name: {{ project_name | lower }}_${% raw %}{{ matrix.os }}{% endraw %}_${% raw %}{{ runner.arch }}{% endraw %}
           path: . # directory to extract downloaded zipped artifacts
 
       - name: Set up pixi
@@ -198,7 +197,7 @@ jobs:
       #- name: Set up pixi
       #  uses: prefix-dev/setup-pixi@v0.9.3
       #  with:
-      #    environments: ${{ env.PIXI_ENVS }}
+      #    environments: ${% raw %}{{ env.PIXI_ENVS }}{% endraw %}
       #    run-install: true
       #    frozen: true
       #    cache: false
@@ -207,7 +206,7 @@ jobs:
       #- name: Install and setup development dependencies
       #  shell: bash
       #  run: |
-      #    for env in ${{ env.PIXI_ENVS }}; do
+      #    for env in ${% raw %}{{ env.PIXI_ENVS }}{% endraw %}; do
       #      echo "🔹🔸🔹🔸🔹   Current env: $env   🔹🔸🔹🔸🔹"
       #      pixi run --environment $env wheel
       #    done
@@ -215,7 +214,7 @@ jobs:
       #- name: Install easydiffraction package from the built wheel
       #  shell: bash
       #  run: |
-      #    for env in ${{ env.PIXI_ENVS }}; do
+      #    for env in ${% raw %}{{ env.PIXI_ENVS }}{% endraw %}; do
       #      echo "🔹🔸🔹🔸🔹   Current env: $env   🔹🔸🔹🔸🔹"
       #      env_prefix="${env%%-*}"
       #      echo "📦 Looking for wheel in dist/$env_prefix/"
@@ -228,18 +227,18 @@ jobs:
       - name: Run unit tests
         shell: bash
         run: |
-          for env in ${{ env.PIXI_ENVS }}; do
+          for env in ${% raw %}{{ env.PIXI_ENVS }}{% endraw %}; do
             echo "🔹🔸🔹🔸🔹   Current env: $env   🔹🔸🔹🔸🔹"
             pixi run --environment $env unit-tests
           done
 
       - name:
-          Run integration tests ${{ needs.env-prepare.outputs.pytest-marks }}
+          Run integration tests ${% raw %}{{ needs.env-prepare.outputs.pytest-marks }}{% endraw %}
         shell: bash
         run: |
-          for env in ${{ env.PIXI_ENVS }}; do
+          for env in ${% raw %}{{ env.PIXI_ENVS }}{% endraw %}; do
             echo "🔹🔸🔹🔸🔹   Current env: $env   🔹🔸🔹🔸🔹"
-            pixi run --environment $env integration-tests ${{ needs.env-prepare.outputs.pytest-marks }}
+            pixi run --environment $env integration-tests ${% raw %}{{ needs.env-prepare.outputs.pytest-marks }}{% endraw %}
           done
 
   # Job 4: Trigger dashboard build
@@ -255,11 +254,11 @@ jobs:
   #    - name: Trigger dashboard build
   #      uses: actions/github-script@v7
   #      with:
-  #        github-token: ${{ secrets.GITHUB_TOKEN }}
+  #        github-token: ${% raw %}{{ secrets.GITHUB_TOKEN }}{% endraw %}
   #        script: |
   #          await github.rest.actions.createWorkflowDispatch({
   #            owner: context.repo.owner,
   #            repo: context.repo.repo,
   #            workflow_id: "dashboard.yaml",
-  #            ref: "${{ env.CI_BRANCH }}"
+  #            ref: "${% raw %}{{ env.CI_BRANCH }}{% endraw %}"
   #          });
