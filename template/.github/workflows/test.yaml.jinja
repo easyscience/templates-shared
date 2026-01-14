@@ -161,6 +161,7 @@ jobs:
         with:
           name: {{ project_name | lower }}_${% raw %}{{ matrix.os }}{% endraw %}_${% raw %}{{ runner.arch }}{% endraw %}
           path: |
+            .github/
             dist/
             tests/
             pytest.ini
