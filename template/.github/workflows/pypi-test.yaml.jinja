@@ -83,7 +83,7 @@ jobs:
 
       - name: Test tutorials as notebooks
         working-directory: {{ lib_package_name }}
-        run: pixi run notebook-tests
+        run: pixi run python -m pytest --nbmake ../docs/docs/tutorials/ --nbmake-timeout=600 --color=yes -n auto -v
 
   # Job 2: Trigger dashboard build
   #dashboard-build-trigger:
