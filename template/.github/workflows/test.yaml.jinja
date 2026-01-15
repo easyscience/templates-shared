@@ -131,7 +131,7 @@ jobs:
           for env in ${% raw %}{{ env.PIXI_ENVS }}{% endraw %}; do
             echo "🔹🔸🔹🔸🔹   Current env: $env   🔹🔸🔹🔸🔹"
             pixi run -e $env dist-build
-            echo "📦 Moving built wheel to dist/$env/"
+            echo "Moving built wheel to dist/$env/"
             pixi run mkdir -p dist/$env
             pixi run mv dist/*.whl dist/$env/
           done
@@ -146,7 +146,7 @@ jobs:
 
       # More than one file/dir need to be specified in 'path', to preserve the
       # structure of the dist/ directory, not only its contents.
-      - name: Upload Python package, etc. for the next job
+      - name: Upload package (incl. extras) for next job
         uses: actions/upload-artifact@v4
         with:
           name: {{ project_name | lower }}_${% raw %}{{ matrix.os }}{% endraw %}_${% raw %}{{ runner.arch }}{% endraw %}
@@ -178,7 +178,7 @@ jobs:
 
     steps:
       - name:
-          Download zipped Python package (incl. extra files) from previous job
+          Download package (incl. extras) from previous job
         uses: actions/download-artifact@v4
         with: # name or path are taken from the upload step of the previous job
           name: {{ project_name | lower }}_${% raw %}{{ matrix.os }}{% endraw %}_${% raw %}{{ runner.arch }}{% endraw %}
@@ -187,6 +187,8 @@ jobs:
       - name: Set up pixi
         uses: ./.github/actions/setup-pixi
         with:
+          environments: ''
+          activate-environment: ''
           run-install: false
           frozen: false
 
