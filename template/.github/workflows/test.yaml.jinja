@@ -155,7 +155,7 @@ jobs:
 
   # Job 3: Test the package
   package-test:
-    needs: [env-prepare, source-test] # depend on previous jobs
+    needs: source-test # depend on previous job
 
     strategy:
       fail-fast: false
