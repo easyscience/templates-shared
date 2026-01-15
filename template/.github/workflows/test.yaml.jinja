@@ -163,10 +163,9 @@ jobs:
     runs-on: ${% raw %}{{ matrix.os }}{% endraw %}
 
     steps:
-      - name:
-          Download package (incl. extras) from previous job
+      - name: Download package (incl. extras) from previous job
         uses: actions/download-artifact@v4
-        with: # name or path are taken from the upload step of the previous job
+        with: # name should be taken from the upload step of the previous job
           name: {{ project_name | lower }}_${% raw %}{{ matrix.os }}{% endraw %}_${% raw %}{{ runner.arch }}{% endraw %}
           path: . # directory to extract downloaded zipped artifacts
 
@@ -211,7 +210,7 @@ jobs:
             whl_url="file://$(python -c 'import os,sys; print(os.path.abspath(sys.argv[1]))' "${whl_path[0]}")"
 
             echo "Installing {{ lib_package_name }} from: $whl_url"
-            pixi add --environment "$env" --pypi "{{ lib_package_name }} @ ${whl_url}"
+            pixi add --feature "$feature" --pypi "{{ lib_package_name }} @ ${whl_url}"
           done
 
       - name: Run unit tests
