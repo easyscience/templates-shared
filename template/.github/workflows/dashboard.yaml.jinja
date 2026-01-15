@@ -29,18 +29,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      # Create GitHub App token for pushing to external dashboard repo.
-      # The 'repositories' parameter is required to grant access to repos
-      # other than the one where the workflow is running.
-      - name: Setup easyscience[bot]
-        uses: ./.github/actions/setup-easyscience-bot
-        with:
-          app-id: {% raw %}${{ vars.EASYSCIENCE_APP_ID }}{% endraw %}
-          private-key: {% raw %}${{ secrets.EASYSCIENCE_APP_KEY }}{% endraw %}
-          repositories: |
-            {% raw %}${{ github.event.repository.name }}{% endraw %}
-            dashboard
-
       - name: Set up pixi
         uses: ./.github/actions/setup-pixi
 
@@ -84,12 +72,25 @@ jobs:
           mkdir -p _dashboard_publish/{% raw %}${{ env.REPO_NAME }}{% endraw %}/{% raw %}${{ env.CI_BRANCH }}{% endraw %}
           cp index.html _dashboard_publish/{% raw %}${{ env.REPO_NAME }}{% endraw %}/{% raw %}${{ env.CI_BRANCH }}{% endraw %}
 
+      # Create GitHub App token for pushing to external dashboard repo.
+      # The 'repositories' parameter is required to grant access to repos
+      # other than the one where the workflow is running.
+      - name: Setup easyscience[bot]
+        id: bot
+        uses: ./.github/actions/setup-easyscience-bot
+        with:
+          app-id: {% raw %}${{ vars.EASYSCIENCE_APP_ID }}{% endraw %}
+          private-key: {% raw %}${{ secrets.EASYSCIENCE_APP_KEY }}{% endraw %}
+          repositories: |
+            {% raw %}${{ github.event.repository.name }}{% endraw %}
+            dashboard
+
       - name: Publish to main branch of {% raw %}${{ github.repository }}{% endraw %}
         uses: peaceiris/actions-gh-pages@v3
         with:
           external_repository: {% raw %}${{ env.REPO_OWNER }}{% endraw %}/dashboard
           publish_branch: {% raw %}${{ env.DEFAULT_BRANCH }}{% endraw %}
-          personal_token: {% raw %}${{ steps.app-token.outputs.token }}{% endraw %}
+          personal_token: {% raw %}${{ steps.bot.outputs.token }}{% endraw %}
           publish_dir: ./_dashboard_publish
           keep_files: true
 
