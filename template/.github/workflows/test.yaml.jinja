@@ -182,21 +182,18 @@ jobs:
         run: |
           set -euo pipefail
 
-          echo "Initializing pixi project"
-          pixi init {{ lib_package_name }}
-          cd {{ lib_package_name }}
-
-          echo "Adding common dependencies"
-          pixi add gsl
-
           for py_ver in $PY_VERSIONS; do
-            feature="py-$(echo "$py_ver" | tr -d .)"  # 3.11 -> py-311
-            env="$feature-env"
-            echo "🔹🔸🔹🔸🔹 Python: $py_ver (env: $env) 🔹🔸🔹🔸🔹"
+            echo "🔹🔸🔹🔸🔹 Python: $py_ver 🔹🔸🔹🔸🔹"
 
-            echo "Adding environment with specific dependencies"
-            pixi add --feature "$feature" "python=$py_ver"
-            pixi workspace environment add "$env" --feature "$feature"
+            echo "Initializing pixi project"
+            pixi init {{ lib_package_name }}_py$py_ver
+            cd {{ lib_package_name }}_py$py_ver
+
+            echo "Adding Python $py_ver"
+            pixi add "python=$py_ver"
+
+            echo "Adding common dependencies"
+            pixi add gsl
 
             echo "Looking for wheel in ../dist/$env/"
             ls -l "../dist/$env/"
@@ -209,27 +206,48 @@ jobs:
 
             whl_url="file://$(python -c 'import os,sys; print(os.path.abspath(sys.argv[1]))' "${whl_path[0]}")"
 
-            echo "Installing {{ lib_package_name }} from: $whl_url"
-            pixi add --feature "$feature" --pypi "{{ lib_package_name }} @ ${whl_url}"
+            echo "Adding {{ lib_package_name }} from: $whl_url"
+            pixi add --pypi "{{ lib_package_name }} @ ${whl_url}"
+
+            echo "Exiting pixi project directory"
+            cd ..
           done
 
       - name: Run unit tests
         shell: bash
         run: |
+          set -euo pipefail
+
           for py_ver in $PY_VERSIONS; do
-            env="py-$(echo $py_ver | tr -d .)-env" # Converts 3.11 -> py-311-env
             echo "🔹🔸🔹🔸🔹 Python: $py_ver (env: $env) 🔹🔸🔹🔸🔹"
-            pixi run --environment $env python -m pytest ../tests/unit/ --color=yes -v
+
+            echo "Entering pixi project directory {{ lib_package_name }}_py$py_ver"
+            cd {{ lib_package_name }}_py$py_ver
+
+            echo "Running tests"
+            pixi run python -m pytest ../tests/unit/ --color=yes -v
+
+            echo "Exiting pixi project directory"
+            cd ..
           done
 
       - name:
           Run integration tests ${% raw %}{{ needs.env-prepare.outputs.pytest-marks }}{% endraw %}
         shell: bash
         run: |
+          set -euo pipefail
+
           for py_ver in $PY_VERSIONS; do
-            env="py-$(echo $py_ver | tr -d .)-env" # Converts 3.11 -> py-311-env
-            echo "🔹🔸🔹🔸🔹 Python: $py_ver (env: $env) 🔹🔸🔹🔸🔹"
-            pixi run --environment $env python -m pytest ../tests/integration/ --color=yes -n auto -v ${% raw %}{{ needs.env-prepare.outputs.pytest-marks }}{% endraw %}
+            echo "🔹🔸🔹🔸🔹 Python: $py_ver 🔹🔸🔹🔸🔹"
+
+            echo "Entering pixi project directory {{ lib_package_name }}_py$py_ver"
+            cd {{ lib_package_name }}_py$py_ver
+
+            echo "Running tests"
+            pixi run python -m pytest ../tests/integration/ --color=yes -n auto -v ${% raw %}{{ needs.env-prepare.outputs.pytest-marks }}{% endraw %}
+
+            echo "Exiting pixi project directory"
+            cd ..
           done
 
   # Job 4: Trigger dashboard build
