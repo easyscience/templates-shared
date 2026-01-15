@@ -7,6 +7,10 @@ inputs:
   private-key:
     description: "GitHub App private key (PEM)"
     required: true
+  repositories:
+    description: "Additional repositories to grant access to (newline-separated)"
+    required: false
+    default: ""
 
 outputs:
   token:
@@ -22,6 +26,7 @@ runs:
       with:
         app-id: ${{ inputs.app-id }}
         private-key: ${{ inputs.private-key }}
+        repositories: ${{ inputs.repositories }}
 
     - name: Configure git for pushing
       shell: bash
