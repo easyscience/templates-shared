@@ -157,11 +157,7 @@ jobs:
         uses: ./.github/actions/upload-artifact
         with:
           name: {{ project_name | lower }}_${% raw %}{{ matrix.os }}{% endraw %}_${% raw %}{{ runner.arch }}{% endraw %}
-          path: |
-            .github/
-            dist/
-            tests/
-            pytest.ini
+          path: dist/
 
   # Job 3: Test the package
   package-test:
@@ -175,11 +171,15 @@ jobs:
     runs-on: ${% raw %}{{ matrix.os }}{% endraw %}
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
       - name: Download package (incl. extras) from previous job
         uses: ./.github/actions/download-artifact
         with:
-          # name should be taken from the upload step of the previous job
+          # name and path should be taken from the upload step of the previous job
           name: {{ project_name | lower }}_${% raw %}{{ matrix.os }}{% endraw %}_${% raw %}{{ runner.arch }}{% endraw %}
+          path: dist/
 
       - name: Set up pixi
         uses: ./.github/actions/setup-pixi
