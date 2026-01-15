@@ -175,7 +175,7 @@ jobs:
 
     steps:
       - name: Download package (incl. extras) from previous job
-      - uses: ./.github/actions/download-artifact
+        uses: ./.github/actions/download-artifact
         with:
           # name should be taken from the upload step of the previous job
           name: {{ project_name | lower }}_${% raw %}{{ matrix.os }}{% endraw %}_${% raw %}{{ runner.arch }}{% endraw %}
