@@ -47,6 +47,7 @@ concurrency:
 env:
   CI_BRANCH: ${% raw %}{{ github.head_ref || github.ref_name }}{% endraw %}
   PY_VERSIONS: '{{ lib_python_min }} {{ lib_python_max }}'
+  PIXI_ENVS: "py-{{ lib_python_min | replace('.', '') }}-env py-{{ lib_python_max | replace('.', '') }}-env"
 
 jobs:
   # Job 1: Prepare environment
@@ -93,7 +94,7 @@ jobs:
         run: |
           for py_ver in $PY_VERSIONS; do
             env="py-$(echo $py_ver | tr -d .)-env" # Converts 3.11 -> py-311-env
-            echo "🔹🔸🔹🔸🔹  Python version (env): $py_ver ($env)  🔹🔸🔹🔸🔹"
+            echo "🔹🔸🔹🔸🔹 Python: $py_ver (env: $env) 🔹🔸🔹🔸🔹"
             pixi run --environment $env unit-tests
           done
 
@@ -103,7 +104,7 @@ jobs:
         run: |
           for py_ver in $PY_VERSIONS; do
             env="py-$(echo $py_ver | tr -d .)-env" # Converts 3.11 -> py-311-env
-            echo "🔹🔸🔹🔸🔹  Python version (env): $py_ver ($env)  🔹🔸🔹🔸🔹"
+            echo "🔹🔸🔹🔸🔹 Python: $py_ver (env: $env) 🔹🔸🔹🔸🔹"
             pixi run --environment $env integration-tests ${% raw %}{{ needs.env-prepare.outputs.pytest-marks }}{% endraw %}
           done
 
@@ -120,7 +121,7 @@ jobs:
         run: |
           for py_ver in $PY_VERSIONS; do
             env="py-$(echo $py_ver | tr -d .)-env" # Converts 3.11 -> py-311-env
-            echo "🔹🔸🔹🔸🔹  Python version (env): $py_ver ($env)  🔹🔸🔹🔸🔹"
+            echo "🔹🔸🔹🔸🔹 Python: $py_ver (env: $env) 🔹🔸🔹🔸🔹"
             pixi run --environment $env dist-build
             echo "Moving built wheel to dist/$env/"
             pixi run mkdir -p dist/$env
@@ -201,7 +202,7 @@ jobs:
         run: |
           for py_ver in $PY_VERSIONS; do
             env="py-$(echo $py_ver | tr -d .)-env" # Converts 3.11 -> py-311-env
-            echo "🔹🔸🔹🔸🔹  Python version (env): $py_ver ($env)  🔹🔸🔹🔸🔹"
+            echo "🔹🔸🔹🔸🔹 Python: $py_ver (env: $env) 🔹🔸🔹🔸🔹"
             pixi init {{ lib_package_name }}
             cd {{ lib_package_name }}
             pixi add python=$py_ver
@@ -217,7 +218,7 @@ jobs:
         run: |
           for py_ver in $PY_VERSIONS; do
             env="py-$(echo $py_ver | tr -d .)-env" # Converts 3.11 -> py-311-env
-            echo "🔹🔸🔹🔸🔹  Python version (env): $py_ver ($env)  🔹🔸🔹🔸🔹"
+            echo "🔹🔸🔹🔸🔹 Python: $py_ver (env: $env) 🔹🔸🔹🔸🔹"
             pixi run --environment $env python -m pytest ../tests/unit/ --color=yes -v
           done
 
@@ -227,7 +228,7 @@ jobs:
         run: |
           for py_ver in $PY_VERSIONS; do
             env="py-$(echo $py_ver | tr -d .)-env" # Converts 3.11 -> py-311-env
-            echo "🔹🔸🔹🔸🔹  Python version (env): $py_ver ($env)  🔹🔸🔹🔸🔹"
+            echo "🔹🔸🔹🔸🔹 Python: $py_ver (env: $env) 🔹🔸🔹🔸🔹"
             pixi run --environment $env python -m pytest ../tests/integration/ --color=yes -n auto -v ${% raw %}{{ needs.env-prepare.outputs.pytest-marks }}{% endraw %}
           done
 
