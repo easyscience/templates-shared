@@ -200,25 +200,36 @@ jobs:
       - name: Install {{ lib_package_name }} from the built wheel
         shell: bash
         run: |
+          set -euo pipefail
+
+          echo "Initializing pixi project"
+          pixi init {{ lib_package_name }}
+          cd {{ lib_package_name }}
+
           for py_ver in $PY_VERSIONS; do
-            env="py-$(echo $py_ver | tr -d .)-env" # Converts 3.11 -> py-311-env
+            env="py-$(echo "$py_ver" | tr -d .)-env"  # 3.11 -> py-311-env
             echo "🔹🔸🔹🔸🔹 Python: $py_ver (env: $env) 🔹🔸🔹🔸🔹"
 
-            echo "Initializing pixi project"
-            pixi init {{ lib_package_name }}
-            cd {{ lib_package_name }}
+            echo "Creating pixi environment: $env"
+            pixi env create "$env"
 
-            echo "Adding dependencies"
-            pixi add python=$py_ver
-            pixi add gsl
+            echo "Adding dependencies to $env"
+            pixi add -e "$env" "python=$py_ver"
+            pixi add -e "$env" gsl
 
-            echo "Looking for wheel in dist/$env/"
+            echo "Looking for wheel in ../dist/$env/"
             ls -l "../dist/$env/"
+
             whl_path=(../dist/"$env"/*.whl)
+            if [[ ! -f "${whl_path[0]}" ]]; then
+              echo "❌ No wheel found in ../dist/$env"
+              exit 1
+            fi
+
             whl_url="file://$(python -c 'import os,sys; print(os.path.abspath(sys.argv[1]))' "${whl_path[0]}")"
 
             echo "Installing {{ lib_package_name }} from: $whl_url"
-            pixi add --pypi "{{ lib_package_name }} @ ${whl_url}"
+            pixi add -e "$env" --pypi "{{ lib_package_name }} @ ${whl_url}"
           done
 
       - name: Run unit tests
