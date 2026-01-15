@@ -49,8 +49,7 @@ Common Patterns:
 - Mixed: (no --vcs-ref) + gh:owner/repo@master/file (stable template, dev data)
 """
 
-from datetime import datetime, timezone
-from email.utils import parsedate_to_datetime
+import re
 from pathlib import Path
 import subprocess
 import sys
@@ -128,8 +127,8 @@ def fetch_github_file(path: str, cache_dir: Path) -> Path:
     """
     Fetch file from GitHub using gh:owner/repo@ref/filepath shorthand format.
     
-    For development branches (master, develop, main), always checks for updates.
-    For release tags, uses cached version if available.
+    Always re-downloads for branches to ensure latest version.
+    Uses cached version for release tags (immutable).
     
     Args:
         path: GitHub path reference (e.g., "gh:easyscience/peasy@master/project.yaml")
@@ -148,24 +147,15 @@ def fetch_github_file(path: str, cache_dir: Path) -> Path:
     cache_filename = f"{ref}_{filepath.replace('/', '_')}"
     cache_file_path = cache_dir / cache_filename
     
-    # Selected branches: always check for updates by comparing Last-Modified
-    branches = ["master", "main", "develop"]
-    if ref in branches and cache_file_path.exists():
-        try:
-            # Get remote file's Last-Modified header
-            response = requests.head(url, timeout=5)
-            if response.status_code == 200 and "Last-Modified" in response.headers:
-                remote_time = parsedate_to_datetime(response.headers["Last-Modified"])
-                local_time = cache_file_path.stat().st_mtime
-                local_datetime = datetime.fromtimestamp(local_time, tz=timezone.utc)
-                
-                # If remote is newer, delete cached file to force re-download
-                if remote_time > local_datetime:
-                    print(f"Updating cached {filepath} from {owner}/{repo}@{ref}")
-                    cache_file_path.unlink()
-        except Exception:
-            # If check fails, proceed with cached version or re-download
-            pass
+    # Check if ref is a release tag (semantic version pattern like v1.0.0 or 1.0.0)
+    is_release_tag = bool(re.match(r'^v?\d+\.\d+', ref))
+    
+    # Always re-download for branches, use cache for release tags
+    if not is_release_tag and cache_file_path.exists():
+        print(f"Refreshing {filepath} from {owner}/{repo} (branch: {ref})")
+        cache_file_path.unlink()
+    elif is_release_tag and cache_file_path.exists():
+        print(f"Using cached {filepath} from {owner}/{repo} (release tag: {ref})")
     
     # Download file using pooch
     file_path = pooch.retrieve(
@@ -175,7 +165,6 @@ def fetch_github_file(path: str, cache_dir: Path) -> Path:
         fname=cache_filename,
     )
     
-    print(f"Copied {filepath} from {owner}/{repo}@{ref}")
     return Path(file_path)
 
 
