@@ -203,14 +203,22 @@ jobs:
           for py_ver in $PY_VERSIONS; do
             env="py-$(echo $py_ver | tr -d .)-env" # Converts 3.11 -> py-311-env
             echo "🔹🔸🔹🔸🔹 Python: $py_ver (env: $env) 🔹🔸🔹🔸🔹"
+
             pixi init {{ lib_package_name }}
             cd {{ lib_package_name }}
+
             pixi add python=$py_ver
             pixi add gsl
+
             echo "Looking for wheel in dist/$env/"
-            whl_path="$(find ../dist/$env -name '*.whl' | head -1)"
+            whl_path="$(find "../dist/$env" -name '*.whl' | head -n 1)"
+            if [[ -z "$whl_path" ]]; then
+              echo "❌ No wheel found in ../dist/$env"
+              exit 1
+            fi
+
             echo "Installing {{ lib_package_name }} from: $whl_path"
-            pixi add --pypi '{{ lib_package_name }} @ ${whl_path}'
+            pixi add --pypi "{{ lib_package_name }} @ ${whl_path}"
           done
 
       - name: Run unit tests
