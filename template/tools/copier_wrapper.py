@@ -49,6 +49,8 @@ Common Patterns:
 - Mixed: (no --vcs-ref) + gh:owner/repo@master/file (stable template, dev data)
 """
 
+from datetime import datetime, timezone
+from email.utils import parsedate_to_datetime
 from pathlib import Path
 import subprocess
 import sys
@@ -59,13 +61,13 @@ import requests
 def get_stable_ref(owner: str, repo: str) -> str:
     """
     Get the latest release tag from GitHub repository.
-
+    
     Falls back to 'master' branch if no releases are found.
-
+    
     Args:
         owner: Repository owner
         repo: Repository name
-
+        
     Returns:
         Latest release tag name, or 'master' if no releases found
     """
@@ -76,7 +78,7 @@ def get_stable_ref(owner: str, repo: str) -> str:
             return response.json()["tag_name"]
     except Exception:
         pass
-
+    
     # Fallback to master branch if no releases
     return "master"
 
@@ -84,20 +86,20 @@ def get_stable_ref(owner: str, repo: str) -> str:
 def parse_github_path(path: str) -> tuple[str, str, str, str]:
     """
     Parse GitHub path reference in format gh:owner/repo@ref/filepath.
-
+    
     Args:
         path: GitHub path string (e.g., "gh:easyscience/peasy@master/project.yaml"
               or "gh:easyscience/peasy/project.yaml" for latest release)
-
+        
     Returns:
         Tuple of (owner, repo, ref, filepath)
     """
     if not path.startswith("gh:"):
         raise ValueError(f"Invalid GitHub path format: {path}. Expected: gh:owner/repo@ref/filepath")
-
+    
     # Remove "gh:" prefix
     path_without_prefix = path[3:]
-
+    
     # Check if ref is specified with @
     if "@" in path_without_prefix:
         repo_part, rest = path_without_prefix.split("@", 1)
@@ -105,7 +107,7 @@ def parse_github_path(path: str) -> tuple[str, str, str, str]:
         if len(parts) != 2:
             raise ValueError(f"Invalid GitHub path format: {path}. Expected: gh:owner/repo@ref/filepath")
         owner, repo = parts
-
+        
         # Split ref and filepath
         ref_filepath_parts = rest.split("/", 1)
         if len(ref_filepath_parts) != 2:
@@ -118,30 +120,53 @@ def parse_github_path(path: str) -> tuple[str, str, str, str]:
             raise ValueError(f"Invalid GitHub path format: {path}. Expected: gh:owner/repo/filepath")
         owner, repo, filepath = parts
         ref = get_stable_ref(owner, repo)
-
+    
     return owner, repo, ref, filepath
 
 
 def fetch_github_file(path: str, cache_dir: Path) -> Path:
     """
     Fetch file from GitHub using gh:owner/repo@ref/filepath shorthand format.
-
+    
+    For development branches (master, develop, main), always checks for updates.
+    For release tags, uses cached version if available.
+    
     Args:
         path: GitHub path reference (e.g., "gh:easyscience/peasy@master/project.yaml")
         cache_dir: Directory to cache downloaded files
-
+        
     Returns:
         Path to the downloaded file
     """
     # Parse GitHub path reference
     owner, repo, ref, filepath = parse_github_path(path)
-
+    
     # Construct raw GitHub URL
     url = f"https://raw.githubusercontent.com/{owner}/{repo}/refs/heads/{ref}/{filepath}"
-
+    
     # Create a unique cache filename including ref
     cache_filename = f"{ref}_{filepath.replace('/', '_')}"
-
+    cache_file_path = cache_dir / cache_filename
+    
+    # Selected branches: always check for updates by comparing Last-Modified
+    branches = ["master", "main", "develop"]
+    if ref in branches and cache_file_path.exists():
+        try:
+            # Get remote file's Last-Modified header
+            response = requests.head(url, timeout=5)
+            if response.status_code == 200 and "Last-Modified" in response.headers:
+                remote_time = parsedate_to_datetime(response.headers["Last-Modified"])
+                local_time = cache_file_path.stat().st_mtime
+                local_datetime = datetime.fromtimestamp(local_time, tz=timezone.utc)
+                
+                # If remote is newer, delete cached file to force re-download
+                if remote_time > local_datetime:
+                    print(f"Updating cached {filepath} from {owner}/{repo}@{ref}")
+                    cache_file_path.unlink()
+        except Exception:
+            # If check fails, proceed with cached version or re-download
+            pass
+    
     # Download file using pooch
     file_path = pooch.retrieve(
         url=url,
@@ -149,7 +174,7 @@ def fetch_github_file(path: str, cache_dir: Path) -> Path:
         path=cache_dir,
         fname=cache_filename,
     )
-
+    
     print(f"Copied {filepath} from {owner}/{repo}@{ref}")
     return Path(file_path)
 
@@ -159,12 +184,12 @@ def main():
     # Separate custom args from copier args
     copier_args = []
     github_data = None
-
+    
     i = 0
     while i < len(sys.argv) - 1:
         i += 1
         arg = sys.argv[i]
-
+        
         if arg == "--gh-data":
             # Custom flag: get next argument as GitHub path
             if i + 1 < len(sys.argv):
@@ -176,7 +201,7 @@ def main():
         else:
             # Pass through to copier
             copier_args.append(arg)
-
+    
     # Process GitHub data if provided
     if github_data:
         if github_data.startswith("gh:"):
@@ -185,7 +210,7 @@ def main():
                 owner, repo, ref, _ = parse_github_path(github_data)
                 cache_dir = Path.home() / ".cache" / owner / repo
                 cache_dir.mkdir(parents=True, exist_ok=True)
-
+                
                 local_file = fetch_github_file(github_data, cache_dir)
                 # Add --data-file with local path to copier args
                 copier_args.extend(["--data-file", str(local_file)])
@@ -196,7 +221,7 @@ def main():
         else:
             # Not a gh: path, pass as-is to copier
             copier_args.extend(["--data-file", github_data])
-
+    
     # Call copier CLI with modified arguments
     try:
         result = subprocess.run(["copier"] + copier_args)
