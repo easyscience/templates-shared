@@ -79,7 +79,7 @@ jobs:
         run: |
           pixi run {{ lib_package_name }} --version
           pixi run {{ lib_package_name }} list-tutorials
-          pixi run {{ lib_package_name }} download-all-tutorials
+          pixi run easydiffraction download-tutorial 1
 
       - name: Test tutorials as notebooks
         working-directory: {{ lib_package_name }}
