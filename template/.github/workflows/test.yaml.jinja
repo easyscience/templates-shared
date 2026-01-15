@@ -46,6 +46,7 @@ concurrency:
 # Set the environment variables to be used in all jobs defined in this workflow
 env:
   CI_BRANCH: ${% raw %}{{ github.head_ref || github.ref_name }}{% endraw %}
+  PY_VERSIONS: '{{ lib_python_min }} {{ lib_python_max }}'
 
 jobs:
   # Job 1: Prepare environment
@@ -78,9 +79,6 @@ jobs:
 
     runs-on: ${% raw %}{{ matrix.os }}{% endraw %}
 
-    env:
-      PIXI_ENVS: 'py-min-env py-max-env'
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
@@ -90,21 +88,12 @@ jobs:
         with:
           environments: ${% raw %}{{ env.PIXI_ENVS }}{% endraw %}
 
-      - name: Show debug info for pixi envs
-        shell: bash
-        run: |
-          for env in ${% raw %}{{ env.PIXI_ENVS }}{% endraw %}; do
-            echo "🔹🔸🔹🔸🔹   Current env: $env   🔹🔸🔹🔸🔹"
-            pixi run python --version
-            echo "PYTHONPATH:"
-            pixi run printenv PYTHONPATH || true
-          done
-
       - name: Run unit tests
         shell: bash
         run: |
-          for env in ${% raw %}{{ env.PIXI_ENVS }}{% endraw %}; do
-            echo "🔹🔸🔹🔸🔹   Current env: $env   🔹🔸🔹🔸🔹"
+          for py_ver in ${% raw %}{{ env.PY_VERSIONS }}{% endraw %}; do
+            env="py-{{ py_ver.split('.') | join('') }}-env"
+            echo "🔹🔸🔹🔸🔹  Python version (env): $py_ver ($env)  🔹🔸🔹🔸🔹"
             pixi run --environment $env unit-tests
           done
 
@@ -112,8 +101,9 @@ jobs:
           Run integration tests ${% raw %}{{ needs.env-prepare.outputs.pytest-marks }}{% endraw %}
         shell: bash
         run: |
-          for env in ${% raw %}{{ env.PIXI_ENVS }}{% endraw %}; do
-            echo "🔹🔸🔹🔸🔹   Current env: $env   🔹🔸🔹🔸🔹"
+          for py_ver in ${% raw %}{{ env.PY_VERSIONS }}{% endraw %}; do
+            env="py-{{ py_ver.split('.') | join('') }}-env"
+            echo "🔹🔸🔹🔸🔹  Python version (env): $py_ver ($env)  🔹🔸🔹🔸🔹"
             pixi run --environment $env integration-tests ${% raw %}{{ needs.env-prepare.outputs.pytest-marks }}{% endraw %}
           done
 
@@ -128,9 +118,10 @@ jobs:
       - name: Create Python package
         shell: bash
         run: |
-          for env in ${% raw %}{{ env.PIXI_ENVS }}{% endraw %}; do
-            echo "🔹🔸🔹🔸🔹   Current env: $env   🔹🔸🔹🔸🔹"
-            pixi run -e $env dist-build
+          for py_ver in ${% raw %}{{ env.PY_VERSIONS }}{% endraw %}; do
+            env="py-{{ py_ver.split('.') | join('') }}-env"
+            echo "🔹🔸🔹🔸🔹  Python version (env): $py_ver ($env)  🔹🔸🔹🔸🔹"
+            pixi run --environment $env dist-build
             echo "Moving built wheel to dist/$env/"
             pixi run mkdir -p dist/$env
             pixi run mv dist/*.whl dist/$env/
@@ -172,10 +163,6 @@ jobs:
 
     runs-on: ${% raw %}{{ matrix.os }}{% endraw %}
 
-    env:
-      PIXI_ENVS: 'py-min py-max'
-      #PIXI_ENVS: 'default' # 'py311-dev py313-dev'
-
     steps:
       - name:
           Download package (incl. extras) from previous job
@@ -205,18 +192,19 @@ jobs:
       #  shell: bash
       #  run: |
       #    for env in ${% raw %}{{ env.PIXI_ENVS }}{% endraw %}; do
-      #      echo "🔹🔸🔹🔸🔹   Current env: $env   🔹🔸🔹🔸🔹"
+      #      echo "🔹🔸🔹🔸🔹  Current env: $env  🔹🔸🔹🔸🔹"
       #      pixi run --environment $env wheel
       #    done
 
-      - name: Clean install from the built wheel
+      - name: Install {{ lib_package_name }} from the built wheel
         shell: bash
         run: |
-          for env in ${% raw %}{{ env.PIXI_ENVS }}{% endraw %}; do
-            echo "🔹🔸🔹🔸🔹   Current env: $env   🔹🔸🔹🔸🔹"
+          for py_ver in ${% raw %}{{ env.PY_VERSIONS }}{% endraw %}; do
+            env="py-{{ py_ver.split('.') | join('') }}-env"
+            echo "🔹🔸🔹🔸🔹  Python version (env): $py_ver ($env)  🔹🔸🔹🔸🔹"
             pixi init {{ lib_package_name }}
-            cd easypeasy
-            pixi add python=3.13
+            cd {{ lib_package_name }}
+            pixi add python=$py_ver
             pixi add gsl
             echo "Looking for wheel in dist/$env/"
             whl_path="$(find ../dist/$env -name '*.whl' | head -1)"
@@ -227,8 +215,9 @@ jobs:
       - name: Run unit tests
         shell: bash
         run: |
-          for env in ${% raw %}{{ env.PIXI_ENVS }}{% endraw %}; do
-            echo "🔹🔸🔹🔸🔹   Current env: $env   🔹🔸🔹🔸🔹"
+          for py_ver in ${% raw %}{{ env.PY_VERSIONS }}{% endraw %}; do
+            env="py-{{ py_ver.split('.') | join('') }}-env"
+            echo "🔹🔸🔹🔸🔹  Python version (env): $py_ver ($env)  🔹🔸🔹🔸🔹"
             pixi run --environment $env python -m pytest ../tests/unit/ --color=yes -v
           done
 
@@ -236,8 +225,9 @@ jobs:
           Run integration tests ${% raw %}{{ needs.env-prepare.outputs.pytest-marks }}{% endraw %}
         shell: bash
         run: |
-          for env in ${% raw %}{{ env.PIXI_ENVS }}{% endraw %}; do
-            echo "🔹🔸🔹🔸🔹   Current env: $env   🔹🔸🔹🔸🔹"
+          for py_ver in ${% raw %}{{ env.PY_VERSIONS }}{% endraw %}; do
+            env="py-{{ py_ver.split('.') | join('') }}-env"
+            echo "🔹🔸🔹🔸🔹  Python version (env): $py_ver ($env)  🔹🔸🔹🔸🔹"
             pixi run --environment $env python -m pytest ../tests/integration/ --color=yes -n auto -v ${% raw %}{{ needs.env-prepare.outputs.pytest-marks }}{% endraw %}
           done
 
