@@ -84,7 +84,7 @@ jobs:
           mkdir -p _dashboard_publish/{% raw %}${{ env.REPO_NAME }}{% endraw %}/{% raw %}${{ env.CI_BRANCH }}{% endraw %}
           cp index.html _dashboard_publish/{% raw %}${{ env.REPO_NAME }}{% endraw %}/{% raw %}${{ env.CI_BRANCH }}{% endraw %}
 
-      - name: Publish to main branch of ${{ github.repository }}
+      - name: Publish to main branch of {% raw %}${{ github.repository }}{% endraw %}
         uses: peaceiris/actions-gh-pages@v3
         with:
           external_repository: {% raw %}${{ env.REPO_OWNER }}{% endraw %}/dashboard
