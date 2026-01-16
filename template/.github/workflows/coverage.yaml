@@ -87,8 +87,8 @@ jobs:
           files: ./coverage-integration.xml
           token: ${{ secrets.CODECOV_TOKEN }}
 
-  # Job 4: Trigger dashboard build
-  dashboard-build-trigger:
+  # Job 4: Build and publish dashboard (reusable workflow)
+  run-reusable-workflows:
     needs: [docstring-coverage, unit-tests-coverage, integration-tests-coverage] # depend on the previous jobs
     uses: ./.github/workflows/dashboard.yaml
     secrets: inherit
