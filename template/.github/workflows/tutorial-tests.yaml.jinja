@@ -55,15 +55,8 @@ jobs:
         shell: bash
         run: pixi run notebook-tests
 
-  # Job 2: Trigger dashboard build
-  dashboard-build-trigger:
+  # Job 2: Build and publish dashboard (reusable workflow)
+  dashboard-build:
     needs: tutorial-tests # depend on previous job
-
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Check-out repository
-        uses: actions/checkout@v5
-
-      - name: Trigger dashboard build
-        uses: ./.github/workflows/dashboard.yaml
+    uses: ./.github/workflows/dashboard.yaml
+    secrets: inherit
