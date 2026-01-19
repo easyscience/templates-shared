@@ -56,9 +56,10 @@ Common Patterns:
 """
 
 import re
-from pathlib import Path
 import subprocess
 import sys
+from pathlib import Path
+
 import pooch
 import requests
 
@@ -102,8 +103,7 @@ def parse_github_path(path: str) -> tuple[str, str, str, str]:
     """
     if not path.startswith('gh:'):
         raise ValueError(
-            f'Invalid GitHub path format: {path}. Expected: '
-            f'gh:owner/repo@ref/filepath'
+            f'Invalid GitHub path format: {path}. Expected: gh:owner/repo@ref/filepath'
         )
 
     # Remove "gh:" prefix
@@ -115,8 +115,7 @@ def parse_github_path(path: str) -> tuple[str, str, str, str]:
         parts = repo_part.split('/')
         if len(parts) != 2:
             raise ValueError(
-                f'Invalid GitHub path format: {path}. Expected: '
-                f'gh:owner/repo@ref/filepath'
+                f'Invalid GitHub path format: {path}. Expected: gh:owner/repo@ref/filepath'
             )
         owner, repo = parts
 
@@ -124,8 +123,7 @@ def parse_github_path(path: str) -> tuple[str, str, str, str]:
         ref_filepath_parts = rest.split('/', 1)
         if len(ref_filepath_parts) != 2:
             raise ValueError(
-                f'Invalid GitHub path format: {path}. Expected: '
-                f'gh:owner/repo@ref/filepath'
+                f'Invalid GitHub path format: {path}. Expected: gh:owner/repo@ref/filepath'
             )
         ref, filepath = ref_filepath_parts
     else:
@@ -133,8 +131,7 @@ def parse_github_path(path: str) -> tuple[str, str, str, str]:
         parts = path_without_prefix.split('/', 2)
         if len(parts) < 3:
             raise ValueError(
-                f'Invalid GitHub path format: {path}. Expected: '
-                f'gh:owner/repo/filepath'
+                f'Invalid GitHub path format: {path}. Expected: gh:owner/repo/filepath'
             )
         owner, repo, filepath = parts
         ref = get_stable_ref(owner, repo)

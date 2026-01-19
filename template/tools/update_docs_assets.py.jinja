@@ -6,9 +6,10 @@ easyscience/assets-branding GitHub repository and copies them to the
 appropriate locations in the documentation directory.
 """
 
-import pooch
-from pathlib import Path
 import shutil
+from pathlib import Path
+
+import pooch
 
 # Configuration: Define what to fetch and where to copy
 GITHUB_REPO = 'easyscience/assets-branding'
