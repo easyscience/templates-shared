@@ -5,9 +5,9 @@
   {# Set up URLs #}
   {% set tutorial_name = page.nb_url.split('/')[-2] %}
   {% set filename = page.nb_url.split('/')[-1] %}
-  {% set docs_version = {% raw %}{{ config.extra.vars.docs_version }}{% endraw %} %}
+  {% raw %}{% set docs_version = {{ config.extra.vars.docs_version }}{% endraw %} %}
   {% set base_colab_url = https://colab.research.google.com/github/easyscience %}
-  {% set repo = {% raw %}{{ lib_repo_name }}{% endraw %} %}
+  {% set repo = {{ lib_repo_name }} %}
   {% set colab_url = base_colab_url + '/' + repo + '/blob/gh-pages/' + docs_version + '/tutorials/' + tutorial_name + '/' + filename %}
   {% set file_url = filename %}
 
