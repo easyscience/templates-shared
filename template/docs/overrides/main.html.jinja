@@ -2,13 +2,23 @@
 
 {% block content %}
 {% if page.nb_url %}
-  {# Set up URLs #}
-  {% set tutorial_name = page.nb_url.split('/')[-2] %}
-  {% set filename = page.nb_url.split('/')[-1] %}
-  {% raw %}{% set docs_version = {{ config.extra.vars.docs_version }} %}{% endraw %}
-  {% set base_colab_url = https://colab.research.google.com/github/easyscience %}
+  {# Parse notebook path/URL #}
+  {% set parts = page.nb_url.split('/') %}
+  {% set tutorial_name = parts[-2] %}
+  {% set filename = parts[-1] %}
+
+  {# Inputs #}
+  {% set docs_version = {{ config.extra.vars.docs_version }} %}
+  {% set base_colab_url = "https://colab.research.google.com/github/easyscience" %}
   {% set repo = {{ lib_repo_name }} %}
-  {% set colab_url = base_colab_url + '/' + repo + '/blob/gh-pages/' + docs_version + '/tutorials/' + tutorial_name + '/' + filename %}
+
+  {# Colab url #}
+  {% set colab_url =
+    base_colab_url ~ "/" ~ repo ~ "/blob/gh-pages/" ~ docs_version ~
+    "/tutorials/" ~ tutorial_name ~ "/" ~ filename
+  %}
+
+  {# Download link: relative to the current page #}
   {% set file_url = filename %}
 
   {# Open in Colab (absolute GitHub URL; works anywhere) #}
