@@ -78,7 +78,7 @@ jobs:
 
       - name: Test tutorials as notebooks
         working-directory: {{ lib_package_name }}
-        run:
+        run: >
           pixi run python -m pytest --nbmake tutorials/ --nbmake-timeout=600 --color=yes
           -n auto -v
 
