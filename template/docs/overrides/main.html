@@ -9,12 +9,12 @@
 
   {# Inputs #}
   {% set docs_version = {{ config.extra.vars.docs_version }} %}
-  {% set base_colab_url = "https://colab.research.google.com/github/easyscience" %}
-  {% set repo = {{ lib_repo_name }} %}
+  {% set base_colab_url = "https://colab.research.google.com/github/" %}
+  {% set repo = {{ config.extra.vars.github_repository }} %}
 
   {# Colab url #}
   {% set colab_url =
-    base_colab_url ~ "/" ~ repo ~ "/blob/gh-pages/" ~ docs_version ~
+    base_colab_url ~ repo ~ "/blob/gh-pages/" ~ docs_version ~
     "/tutorials/" ~ tutorial_name ~ "/" ~ filename
   %}
 
