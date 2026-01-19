@@ -105,8 +105,14 @@ jobs:
             echo "| notebooks format | ${{ steps.check_notebooks_formatting.outcome == 'success' && '✅' || '❌' }} |"
           } >> "$GITHUB_STEP_SUMMARY"
 
-      # Fail job requirement
+      # Fail job if any check failed
       - name: Fail job if any check failed
-        if: failure()
+        if: |
+          steps.check_pyproject.outcome == 'failure' ||
+          steps.check_code_linting.outcome == 'failure' ||
+          steps.check_code_formatting.outcome == 'failure' ||
+          steps.check_docs_formatting.outcome == 'failure' ||
+          steps.check_others_formatting.outcome == 'failure' ||
+          steps.check_notebooks_formatting.outcome == 'failure'
         shell: bash
         run: exit 1
