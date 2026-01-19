@@ -53,11 +53,7 @@ jobs:
   # Single job that builds and deploys documentation.
   # Uses macOS runner for consistent Plotly chart rendering.
   build-deploy-docs:
-    strategy:
-      matrix:
-        os: [macos-latest]
-
-    runs-on: {% raw %}${{ matrix.os }}{% endraw %}
+    runs-on: ubuntu-latest # macos-latest
 
     permissions:
       contents: write # Required for pushing to the gh-pages branch
