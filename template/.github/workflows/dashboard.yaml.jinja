@@ -86,7 +86,7 @@ jobs:
         uses: Wandalen/wretry.action@v3.8.0
         with:
           attempt_limit: 3
-          attempt_delay: 15000  # 15 seconds between retries
+          attempt_delay: 15000 # 15 seconds between retries
           action: peaceiris/actions-gh-pages@v4
           with: |
             publish_dir: ./_dashboard_publish
