@@ -4,13 +4,11 @@ on:
   workflow_dispatch:
   workflow_call:
 
-# Allow only one concurrent workflow, skipping runs queued between the run
-# in-progress and latest queued. And cancel in-progress runs.
+# Allow only one concurrent workflow across ALL callers pushing to dashboard
+# This prevents race conditions when multiple workflows call this reusable workflow
 concurrency:
-  group:
-    {% raw %}dashboard-${{ github.repository }}-${{ github.event.pull_request.number ||
-    github.ref }}{% endraw %}
-  cancel-in-progress: true
+  group: {% raw %}dashboard-publish-${{ github.repository }}{% endraw %}
+  cancel-in-progress: false
 
 # Set the environment variables to be used in all jobs defined in this workflow
 env:
