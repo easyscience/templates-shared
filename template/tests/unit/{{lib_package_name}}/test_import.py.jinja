@@ -2,3 +2,12 @@ def test_import_{{lib_package_name}}():
     import {{lib_package_name}}
 
     assert {{lib_package_name}} is not None
+
+
+def test_dummy_function():
+    from easydiffraction.dummy import dummy_function
+
+    result = dummy_function()
+
+    assert result == "Hello from easydiffraction"
+    assert isinstance(result, str)
