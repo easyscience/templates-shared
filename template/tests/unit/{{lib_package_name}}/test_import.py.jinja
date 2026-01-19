@@ -2,12 +2,3 @@ def test_import_{{lib_package_name}}():
     import {{lib_package_name}}
 
     assert {{lib_package_name}} is not None
-
-
-def test_dummy_function():
-    from {{lib_package_name}}.dummy import dummy_function
-
-    result = dummy_function()
-
-    assert result == "Hello from {{lib_package_name}}"
-    assert isinstance(result, str)
