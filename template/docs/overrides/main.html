@@ -1,3 +1,8 @@
+<!-- DEBUG extra: {{ config.extra }} -->
+<!-- DEBUG vars: {{ config.extra.vars }} -->
+<!-- DEBUG docs_version: {{ config.extra.vars.docs_version }} -->
+<!-- DEBUG github_repository: {{ config.extra.vars.github_repository }} -->
+
 {% extends "base.html" %}
 
 {% block content %}
@@ -10,8 +15,8 @@
   {# Colab url #}
   {% set base_colab_url = "https://colab.research.google.com/github/" %}
   {% set colab_url =
-    base_colab_url ~ {{ config.extra.vars.github_repository }} ~
-    "/blob/gh-pages/" ~ {{ config.extra.vars.docs_version }} ~
+    "base_colab_url ~ config.extra.vars.github_repository ~
+    "/blob/gh-pages/" ~ config.extra.vars.docs_version ~
     "/tutorials/" ~ tutorial_name ~ "/" ~ filename
   %}
 
