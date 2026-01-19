@@ -65,8 +65,8 @@ jobs:
 
       - name: Generate dashboard HTML
         run: >
-          pixi run python -m badgery --config .badgery.yaml --repo {% raw %}${{
-          github.repository }}{% endraw %} --branch {% raw %}${{ env.CI_BRANCH }}{% endraw %} --output index.html
+          pixi run python -m badgery --config .badgery.yaml --repo {% raw %}${{ github.repository
+          }}{% endraw %} --branch {% raw %}${{ env.CI_BRANCH }}{% endraw %} --output index.html
 
       - name: Prepare publish directory
         run: |

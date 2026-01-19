@@ -1,6 +1,5 @@
 name: 'Setup EasyScience bot for pushing'
-description:
-  'Create GitHub App token and configure git identity + origin remote'
+description: 'Create GitHub App token and configure git identity + origin remote'
 inputs:
   app-id:
     description: 'GitHub App ID'
@@ -9,8 +8,7 @@ inputs:
     description: 'GitHub App private key (PEM)'
     required: true
   repositories:
-    description:
-      'Additional repositories to grant access to (newline-separated)'
+    description: 'Additional repositories to grant access to (newline-separated)'
     required: false
     default: ''
 

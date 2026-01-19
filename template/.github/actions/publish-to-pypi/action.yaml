@@ -1,6 +1,5 @@
 name: 'Publish to PyPI'
-description:
-  'Publish a built distribution to PyPI using pypa/gh-action-pypi-publish'
+description: 'Publish a built distribution to PyPI using pypa/gh-action-pypi-publish'
 inputs:
   password:
     description: 'PyPI API token (or password) for authentication'

@@ -10,8 +10,7 @@ on:
 # Allow only one concurrent workflow, skipping runs queued between the run
 # in-progress and latest queued. And cancel in-progress runs.
 concurrency:
-  group:
-    {% raw %}${{ github.workflow }}{% endraw %}-{% raw %}${{ github.event.pull_request.number || github.ref }}{% endraw %}
+  group: {% raw %}${{ github.workflow }}{% endraw %}-{% raw %}${{ github.event.pull_request.number || github.ref }}{% endraw %}
   cancel-in-progress: true
 
 # Set the environment variables to be used in all jobs defined in this workflow
@@ -80,8 +79,8 @@ jobs:
       - name: Test tutorials as notebooks
         working-directory: {{ lib_package_name }}
         run:
-          pixi run python -m pytest --nbmake tutorials/ --nbmake-timeout=600
-          --color=yes -n auto -v
+          pixi run python -m pytest --nbmake tutorials/ --nbmake-timeout=600 --color=yes
+          -n auto -v
 
   # Job 2: Build and publish dashboard (reusable workflow)
   run-reusable-workflows:
