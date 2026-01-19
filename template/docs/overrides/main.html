@@ -2,11 +2,6 @@
 
 {% block content %}
 
-<!-- DEBUG extra: {{ config.extra }} -->
-<!-- DEBUG vars: {{ config.extra.vars }} -->
-<!-- DEBUG docs_version: {{ config.extra.vars.docs_version }} -->
-<!-- DEBUG github_repository: {{ config.extra.vars.github_repository }} -->
-
 {% if page.nb_url %}
   {# Parse notebook path/URL #}
   {% set parts = page.nb_url.split('/') %}
