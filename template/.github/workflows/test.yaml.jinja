@@ -47,7 +47,7 @@ concurrency:
 env:
   CI_BRANCH: {% raw %}${{ github.head_ref || github.ref_name }}{% endraw %}
   PY_VERSIONS: '{{ lib_python_min }} {{ lib_python_max }}'
-  PIXI_ENVS: "py-{{ lib_python_min | replace('.', '') }}-env py-{{ lib_python_max | replace('.', '') }}-env"
+  PIXI_ENVS: 'py-{{ lib_python_min | replace(".", "") }}-env py-{{ lib_python_max | replace(".", "") }}-env'
 
 jobs:
   # Job 1: Set up environment variables

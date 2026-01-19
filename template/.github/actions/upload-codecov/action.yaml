@@ -1,32 +1,32 @@
-name: "Upload coverage to Codecov"
-description: "Generic wrapper for codecov/codecov-action@v5"
+name: 'Upload coverage to Codecov'
+description: 'Generic wrapper for codecov/codecov-action@v5'
 
 inputs:
   name:
-    description: "Codecov upload name"
+    description: 'Codecov upload name'
     required: true
 
   flags:
-    description: "Codecov flags"
+    description: 'Codecov flags'
     required: false
-    default: ""
+    default: ''
 
   files:
-    description: "Coverage report files"
+    description: 'Coverage report files'
     required: true
 
   fail_ci_if_error:
-    description: "Fail CI if upload fails"
+    description: 'Fail CI if upload fails'
     required: false
-    default: "true"
+    default: 'true'
 
   verbose:
-    description: "Enable verbose output"
+    description: 'Enable verbose output'
     required: false
-    default: "true"
+    default: 'true'
 
   token:
-    description: "Codecov token"
+    description: 'Codecov token'
     required: true
 
 runs:

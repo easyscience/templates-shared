@@ -79,7 +79,9 @@ jobs:
 
       - name: Test tutorials as notebooks
         working-directory: {{ lib_package_name }}
-        run: pixi run python -m pytest --nbmake tutorials/ --nbmake-timeout=600 --color=yes -n auto -v
+        run:
+          pixi run python -m pytest --nbmake tutorials/ --nbmake-timeout=600
+          --color=yes -n auto -v
 
   # Job 2: Build and publish dashboard (reusable workflow)
   run-reusable-workflows:

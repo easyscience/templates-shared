@@ -17,7 +17,7 @@ jobs:
       - name: Validate required labels
         run: |
           PR_LABELS=$(echo '${{ toJson(github.event.pull_request.labels.*.name) }}' | jq -r '.[]')
-          
+
           echo "Current PR labels: $PR_LABELS"
           VALID_LABELS=(
             "[bot] pull request"

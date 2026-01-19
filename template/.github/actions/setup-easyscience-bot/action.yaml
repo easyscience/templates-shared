@@ -1,24 +1,26 @@
-name: "Setup EasyScience bot for pushing"
-description: "Create GitHub App token and configure git identity + origin remote"
+name: 'Setup EasyScience bot for pushing'
+description:
+  'Create GitHub App token and configure git identity + origin remote'
 inputs:
   app-id:
-    description: "GitHub App ID"
+    description: 'GitHub App ID'
     required: true
   private-key:
-    description: "GitHub App private key (PEM)"
+    description: 'GitHub App private key (PEM)'
     required: true
   repositories:
-    description: "Additional repositories to grant access to (newline-separated)"
+    description:
+      'Additional repositories to grant access to (newline-separated)'
     required: false
-    default: ""
+    default: ''
 
 outputs:
   token:
-    description: "Installation access token"
+    description: 'Installation access token'
     value: ${{ steps.app-token.outputs.token }}
 
 runs:
-  using: "composite"
+  using: 'composite'
   steps:
     - name: Create GitHub App installation token
       id: app-token

@@ -56,7 +56,7 @@ Common Patterns:
 """
 
 import re
-import subprocess
+import subprocess  # noqa: S404
 import sys
 from pathlib import Path
 
@@ -82,8 +82,8 @@ def get_stable_ref(owner: str, repo: str) -> str:
         response = requests.get(url, timeout=5)
         if response.status_code == 200:
             return response.json()['tag_name']
-    except Exception:
-        pass
+    except Exception:  # noqa: S110
+        pass  # Silent fail is acceptable - we fallback to master branch
 
     # Fallback to master branch if no releases
     return 'master'
@@ -233,7 +233,7 @@ def main():
 
     # Call copier CLI with modified arguments
     try:
-        result = subprocess.run(['copier'] + copier_args)
+        result = subprocess.run(['copier'] + copier_args)  # noqa: S603
         return result.returncode
     except FileNotFoundError:
         print("❌ Error: 'copier' command not found. Please install copier.")

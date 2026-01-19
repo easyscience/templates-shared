@@ -7,7 +7,9 @@ on:
 # Allow only one concurrent workflow, skipping runs queued between the run
 # in-progress and latest queued. And cancel in-progress runs.
 concurrency:
-  group: {% raw %}dashboard-${{ github.repository }}-${{ github.event.pull_request.number || github.ref }}{% endraw %}
+  group:
+    {% raw %}dashboard-${{ github.repository }}-${{ github.event.pull_request.number ||
+    github.ref }}{% endraw %}
   cancel-in-progress: true
 
 # Set the environment variables to be used in all jobs defined in this workflow
@@ -63,8 +65,8 @@ jobs:
 
       - name: Generate dashboard HTML
         run: >
-          pixi run python -m badgery --config .badgery.yaml --repo
-          {% raw %}${{ github.repository }}{% endraw %} --branch {% raw %}${{ env.CI_BRANCH }}{% endraw %} --output index.html
+          pixi run python -m badgery --config .badgery.yaml --repo {% raw %}${{
+          github.repository }}{% endraw %} --branch {% raw %}${{ env.CI_BRANCH }}{% endraw %} --output index.html
 
       - name: Prepare publish directory
         run: |
