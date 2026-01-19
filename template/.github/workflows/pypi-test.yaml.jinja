@@ -52,7 +52,11 @@ jobs:
 
       - name: Add {{ lib_package_name }} from PyPI
         working-directory: {{ lib_package_name }}
-        run: pixi add --pypi "{{ lib_package_name }}[all]"
+        run: pixi add --pypi "{{ lib_package_name }}"
+
+      - name: Add dev dependencies from PyPI
+        working-directory: {{ lib_package_name }}
+        run: pixi add --pypi pytest pytest-xdist
 
       - name: Add Pixi task as a shortcut
         working-directory: {{ lib_package_name }}
