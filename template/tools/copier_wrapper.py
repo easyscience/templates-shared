@@ -168,7 +168,8 @@ def fetch_github_file(path: str, cache_dir: Path) -> Path:
     cache_filename = f'{ref}_{filepath.replace("/", "_")}'
     cache_file_path = cache_dir / cache_filename
 
-    # Check if ref is a release tag (semantic version pattern like v1.0.0 or 1.0.0)
+    # Check if ref is a release tag (semantic version pattern like
+    # v1.0.0 or 1.0.0)
     is_release_tag = bool(re.match(r'^v?\d+\.\d+', ref))
 
     # Always re-download for branches, use cache for release tags
