@@ -1,5 +1,53 @@
 ---
 # =============================================================================
+# Shared questions for all EasyScience templates
+# =============================================================================
+
+project_name:
+  type: str
+  default: EasyPeasy
+  help: What is the project name, including the `Easy` prefix?
+
+project_shortcut:
+  type: str
+  default: EP
+  help: What is the project shortcut (2–3 letters)?
+
+project_short_description:
+  type: str
+  default: Imaginary data analysis
+  help: What is the short description of the project (3–6 words)?
+
+project_extended_description:
+  type: str
+  default: >-
+    For performing imaginary calculations based on a theoretical model
+    and refining its parameters against experimental data
+  help: |
+    What is the extended description of the project, describing its purpose (1–3 sentences)?
+
+project_copyright_years:
+  type: str
+  default: '2021-2026'
+  help: What is the project's copyright year(s)?
+
+project_repo_name:
+  type: str
+  default: '{{ project_name | replace("Easy", "") | lower }}'
+  help: What is the project home repository under EasyScience organization?
+
+project_homepage_url:
+  type: str
+  default: 'https://easyscience.github.io/{{ project_repo_name }}'
+  help: What is the project's homepage URL?
+
+project_contact_email:
+  type: str
+  default: 'support@{{ project_name | lower }}.org'
+  help: What is the contact email address for the project?
+
+---
+# =============================================================================
 # Template settings
 # =============================================================================
 
